@@ -8,6 +8,7 @@ from tweepy import Status
 import json
 import pandas as pd
 import numpy as np
+#create a twitter_credentials file with api keys
 import twitter_credentials
  
  # # # # TWITTER STREAMER # # # #
