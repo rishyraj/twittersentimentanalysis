@@ -1,0 +1,4 @@
+**/.vscode
+**/__pycache__
+**/data/tweets_dataset.csv
+**/data/glove.twitter.27B.100d.txt
