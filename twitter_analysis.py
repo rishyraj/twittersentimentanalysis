@@ -16,7 +16,7 @@ import sys
 
 vocab_count = 10000
 val_size = 1000
-epochs = 15
+epochs = 6
 batch_size = 512
 max_tweet_len = 25
 
@@ -35,8 +35,8 @@ def deep_model(model, x_train, y_train, x_valid, y_valid):
     Output:
         model training history
     '''
-    model.compile(optimizer='rmsprop'
-                  , loss='categorical_crossentropy'
+    model.compile(optimizer='adam'
+                  , loss='binary_crossentropy'
                   , metrics=['accuracy'])
     
     history = model.fit(x_train
@@ -103,8 +103,9 @@ def predict(model,tweet):
     tweet = tk.texts_to_sequences(tweet)
     tweet = pad_sequences(tweet, maxlen=max_tweet_len)
     prediction = model.predict(tweet)
+    # print(prediction)
     neg_prob = prediction[0][0]
-    pos_prob = prediction[0][4]
+    pos_prob = prediction[0][1]
     if (neg_prob > pos_prob):
         print("Negative Sentiment")
     else:
@@ -140,10 +141,12 @@ def remove_mentions(input_text):
 
 # df = pd.read_csv('data/tweets_dataset.csv',names=["sentiment","id","date","flag","user","text"],encoding='ISO-8859-1')
 # df = df.reindex(np.random.permutation(df.index))
-# df = df.drop(df.index[1000:])
+# df = df.drop(df.index[100000:])
 # df = df[['text', 'sentiment']]
 # df.text = df.text.apply(remove_stopwords).apply(remove_mentions)
-# df['sentiment'].replace(to_replace=4,value=1)
+# val_to_replace = {0:0, 4:1}
+# df.sentiment = df['sentiment'].replace(4,1)
+# print(df)
 # x_train, x_test, y_train, y_test = train_test_split(df.text, df.sentiment, test_size=0.1,random_state=22)
 
 # tk = Tokenizer(num_words=vocab_count, filters='!"#$%&()*+,-./:;<=>?@[]^_`{"}~\r\t\n',lower=True, split=" ")
@@ -163,32 +166,33 @@ def remove_mentions(input_text):
 # x_train_emb, x_valid_emb, y_train_emb, y_valid_emb = train_test_split(x_train_seq_trunc, y_train_conv, test_size=0.1, random_state=22)
 
 # emb_model = models.Sequential()
-# emb_model.add(layers.Embedding(vocab_count,8,input_length=max_tweet_len))
+# emb_model.add(layers.Embedding(vocab_count,15,input_length=max_tweet_len))
 # emb_model.add(layers.Flatten())
-# emb_model.add(layers.Dense(5, activation='softmax'))
+# emb_model.add(layers.Dense(2, activation='relu'))
+# emb_model.add(layers.Dense(2, activation='sigmoid'))
 # emb_history = deep_model(emb_model, x_train_emb, y_train_emb, x_valid_emb, y_valid_emb)
-# eval_metric(emb_history,'loss')
-# emb_results = test_model(emb_model, x_train_seq_trunc, y_train_conv, x_test_seq_trunc, y_test_conv, 6)
-# print('/n')
+# eval_metric(emb_history,'acc')
+# emb_results = test_model(emb_model, x_train_seq_trunc, y_train_conv, x_test_seq_trunc, y_test_conv, 3)
+# print('\n')
 # print('Test accuracy of word embeddings model: {0:.2f}%'.format(emb_results[1]*100))
 
 # serialize model to JSON
 # model_json = emb_model.to_json()
-# with open("model/emb_model.json", "w") as json_file:
-#     json_file.write(model_json)
-# # serialize weights to HDF5
-# emb_model.save_weights("model/model.h5")
+# with open("model/emb_model_bin.json", "w") as json_file:
+    # json_file.write(model_json)
+# serialize weights to HDF5
+# emb_model.save_weights("model/model_bin.h5")
 # print("Saved model to disk")
 
 # later...
 
-json_file = open('model/emb_model.json', 'r')
+json_file = open('model/emb_model_bin.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 loaded_model = model_from_json(loaded_model_json)
 
-loaded_model.load_weights("model/model.h5")
-# print("Loaded model from disk")
+loaded_model.load_weights("model/model_bin.h5")
+print("Loaded model from disk")
 
-# predict(loaded_model,"Recall DT for being an immature and unfit leader.")
-# predict(loaded_model, "What a great day outside, so nice and warm.")
+predict(loaded_model,"Recall DT for being an immature and unfit leader.")
+predict(loaded_model, "What a great day outside, so nice and warm.")
